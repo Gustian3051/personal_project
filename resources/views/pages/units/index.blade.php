@@ -65,10 +65,10 @@
                     </div>
 
                     <div class="relative overflow-x-auto sm:rounded-lg">
-                        @include('pages.stocks.table')
+                        @include('pages.units.table')
                     </div>
-                    <div class="md:my-4 flex justify-center" id="stocksTable">
-                        {{ $stocks->links() }}
+                    <div class="md:my-4 flex justify-center" id="unitsTable">
+                        {{ $units->links() }}
                     </div>
                 </div>
             </div>

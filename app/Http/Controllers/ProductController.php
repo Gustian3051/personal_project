@@ -44,7 +44,6 @@ class ProductController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'unit_id' => 'required|exists:units,id',
                 'supplier_id' => 'required|exists:suppliers,id',
-                'quantity' => 'required|integer|min:1',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ], [
                 'name.required' => 'Nama produk harus diisi.',
@@ -52,7 +51,6 @@ class ProductController extends Controller
                 'category_id.required' => 'Kategori produk harus diisi.',
                 'unit_id.required' => 'Satuan produk harus diisi.',
                 'supplier_id.required' => 'Supplier produk harus diisi.',
-                'quantity.required' => 'Stok produk harus diisi.',
                 'image.image' => 'File harus berupa gambar.',
             ]);
 
@@ -67,19 +65,26 @@ class ProductController extends Controller
             // Simpan produk
             $product = Product::create($validation);
 
-            // Simpan stok
-            Stock::create([
-                'product_id' => $product->id,
-                'quantity' => $request->input('quantity'),
-                'in_stock' => null,
-                'out_stock' => null,
-            ]);
+            // Simpan stok awal jika ada input jumlah stok
+            if ($request->has('quantity') && $request->input('quantity') > 0) {
+                Stock::create([
+                    'product_id' => $product->id,
+                    'quantity' => $request->input('quantity'),
+                    'in_stock' => $request->input('quantity'),
+                    'out_stock' => 0,
+                ]);
+
+                // Perbarui stok di tabel produk
+                $product->stock_quantity = $request->input('quantity');
+                $product->save();
+            }
 
             return redirect()->back()->with('success', 'Produk berhasil ditambahkan.');
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'Produk gagal ditambahkan: ' . $th->getMessage());
         }
     }
+
 
 
     public function destroy(Product $product)
